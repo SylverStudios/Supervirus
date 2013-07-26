@@ -5,6 +5,8 @@ Game = {
  
   // The total height of the game screen. 
   height: 600,
+  
+  score: 0,
  
   // Initialize and start our game
   start: function() {
@@ -16,19 +18,11 @@ Game = {
     Crafty.scene('Loading');
   },
   
-  checkIfWon: function() {
-	  console.log(this.mobArray.length);
-	  if (this.mobArray.length == 0) {
-		  console.log("now i'm confused");
-		  Crafty.scene('Victory');
-	  }
-  },
-  
 }
  
 $text_css = {
   'font-size': '24px',
   'font-family': 'Arial',
-  'color': 'white',
+  'color': 'black',
   'text-align': 'center'
 }

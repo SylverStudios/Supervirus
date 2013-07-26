@@ -46,13 +46,23 @@ Crafty.c('HitCircle', {
 
 Crafty.c('HeadsUpDisplay', {
 	init: function() {
-		this.requires('Actor, Text')
-		.attr({ x: Crafty.viewport.x + 20, y: Crafty.viewport.y + 20, score: 0 })
+		this.requires('2D, DOM, Text')
+		.attr({ x: Crafty.viewport.x + 20, y: Crafty.viewport.y + 20, score: 0, w: 250 })
 		.text("Score: " + this.score)
+		.css($text_css);
+		
+		$text_css = {
+		  'font-size': '24px',
+		  'font-family': 'Arial',
+		  'color': 'black',
+		  'text-align': 'center'
+		}
+		
 	},
 	
 	scoreUp: function(amount) {
-		this.score += amount;
+		this.score += Math.floor(amount);
+		Game.score = this.score;
 		this.text("Score: " + this.score);
 		this.recenter();
 	},
@@ -76,9 +86,9 @@ Crafty.c('PlayerCharacter', {
 		* Keyboard: for detection of key presses and lifts
 		*/
 		this.requires('Actor, Fourway, HitCircle, spr_player, Keyboard')
-		.attr({ x: Game.width/2 - this._w/2, y: Game.height/2 - this._h/2 }) // .attr initializes fields in this entity object
+		.attr({ x: Game.width/2 - this._w/2, y: Game.height/2 - this._h/2, zoomFactor: 0.995, growthFactor: 1 }) // .attr initializes fields in this entity object
 		.radiusFunction("this._w/2") // initiate HitCircle and tell it how to calculate the radius from now on
-		.fourway(5) // initialize the keyboard input motion system with a speed in pixels per tick
+		.fourway(4) // initialize the keyboard input motion system with a speed in pixels per tick
 		.onHit('PassiveMob', this.hitPassiveMob) // translation: when we collide with an entity called 'PassiveMob' execute function 'this.hitPassiveMob'
 	
 		// init width and height (defaults to sprite size which is much bigger)
@@ -90,6 +100,11 @@ Crafty.c('PlayerCharacter', {
 		this.y = Game.height/2 - this._h/2;
 		this.redrawHitCircle(); // HitCircle function
 		
+		this.bindFunctions();
+		
+	},
+	
+	bindFunctions: function() {
 		// each frame, check if hitting boundary
 		this.bind("EnterFrame", this.hitBoundary);
 		
@@ -98,7 +113,6 @@ Crafty.c('PlayerCharacter', {
 		
 		// sidescrolling action: change boundary location when moving
 		this.bind("Move", this.moveBoundary);
-		
 	},
 	
 	moveBoundary: function(data) {
@@ -109,54 +123,43 @@ Crafty.c('PlayerCharacter', {
 	// when player hits a passive mob, increase width and height and redraw hitcircle, and remove passive mob
 	hitPassiveMob: function(data) {
 		
-		Crafty("HeadsUpDisplay").scoreUp(1);
 		
 		passiveMob = data[0].obj; // this is just how we access what we hit with the onHit function
+		
+		mobRadius = passiveMob.hitCircle.radius;
+		
+		// check if mob was bigger than player, if so lose.
+		if (mobRadius > this.hitCircle.radius) {
+			Crafty.scene('Defeat');
+			return;
+		}
+		
+		Crafty("HeadsUpDisplay").scoreUp(mobRadius);
+		
 		passiveMob.playerCollided(); // let the collided mob know we hit them so they can disappear or whatever
 		
+		mobRadius /= 8;
+		
 		// increase size of player.  the decrease of x and y is to show growth from all sides, not just expansion of the bottom right of the sprite
-		this.x -= .5;
-		this.y -= .5;
-		this._w = this._w + 1;
-		this._h = this._h + 1;
+		this.x -= mobRadius/2;
+		this.y -= mobRadius/2;
+		this._w = this._w + mobRadius;
+		this._h = this._h + mobRadius;
 		
 		// new _w and _h, gotta redraw the hit circle for collision detection
 		this.redrawHitCircle();
 		this.hitBoundary();
 		
-		this.customZoom(0.995);
-		
-		// var xshould = Crafty.viewport.x;
-		// var yshould = Crafty.viewport.y;
-		// 
-		// console.log("");
-		// console.log("BEFORE: " + Crafty.viewport.x + ", " + Crafty.viewport.y + " --- " + Crafty.viewport.width + ", " + Crafty.viewport.height);
-		// 
-		// Crafty.viewport.zoom(.99, this.center("x"), this.center("y"), 5);
-		// 		
-		// Crafty.viewport.scale(.99);
-		// 
-		// console.log(Crafty(0).toString());
-		// 
-		// Crafty.viewport.x = xshould;
-		// Crafty.viewport.y = yshould;
-		// Crafty.viewport.width = Game.width;
-		// Crafty.viewport.height = Game.height;
-		// 
-		// Crafty.viewport.reload();
-
-		// console.log("AFTER: " + Crafty.viewport.x + ", " + Crafty.viewport.y + " --- " + Crafty.viewport.width + ", " + Crafty.viewport.height);
+		this.customZoom(this.zoomFactor);
 	},
 	
 	customZoom: function(factor) {
 		Crafty("2D").each( function(i) {
-			// console.log("");
-			// console.log(this.x + ", " + this.y + ", " + factor + ", " + this._w + ", " + this._h);
+			
 			this.x += (1 - factor) * this._w/2;
-			this.y += (1 - factor) * this._h/2;
+			this.y += (1 - factor) * this._w/2;
 			this._w *= factor;
 			this._h *= factor;
-			// console.log(this.x + ", " + this.y + ", " + factor + ", " + this._w + ", " + this._h);
 		});
 		Crafty("HitCircle").each( function(i) {
 			this.redrawHitCircle();
@@ -188,7 +191,12 @@ Crafty.c('PlayerCharacter', {
 	hitBoundary: function() {
 		
 		// this is how we locate an entity with Crafty.  If there are multiple of these entities, an array is returned (only gonna be 1 boundary tho)
-		var boundary = Crafty("Boundary"); 
+		var boundary = Crafty("Boundary");
+		
+		if (!boundary.center) {
+			// Game has ended, just get out while you still can!
+			return;
+		} 
 		
 		// don't forget to be awesome at math
 		var distanceBetweenCenters = Math.sqrt( Math.pow( this.center("x") - boundary.center("x"), 2 ) + Math.pow( this.center("y") - boundary.center("y"), 2) );
@@ -298,7 +306,64 @@ Crafty.c('PlayerCharacter', {
 		var yCorrection = -centerJoinComponentY * magnitudeCorrection;
 		this.x += xCorrection;
 		this.y += yCorrection;
-	}
+	},
+	
+});
+
+Crafty.c('MobArray', {
+	init: function() {
+		this.attr({ _array: [] });
+	},
+	
+	getArray: function() {
+		return this._array;
+	},
+	
+	add: function(mob) {
+		this._array.push(mob);
+	},
+	
+	remove: function(mob) {
+		this._array.splice(this._array.indexOf(mob),1);
+		Crafty.trigger('MobRemoved', this);
+	},
+	
+	get: function(index) {
+		return this._array[index];
+	},
+	
+	length: function() {
+		return this._array.length;
+	},
+	
+	lowestSize: function() {
+		var lowest;
+		for (var i = 0 ; i < this._array.length; i++ ) {
+			if (!lowest || this._array[i].hitCircle.radius < lowest) {
+				lowest = this._array[i].hitCircle.radius;
+			}
+		}
+		return lowest;
+	},
+	
+	averageSize: function() {
+		var average = 0;
+		for (var i = 0 ; i < this._array.length; i++ ) {
+			average += this._array[i].hitCircle.radius;
+		}
+		average /= this._array.length;
+		return average;
+	},
+	
+	amountOverSize: function(size) {
+		var amount = 0;
+		for (var i = 0 ; i < this._array.length; i++ ) {
+			if ( this._array[i].hitCircle.radius > size ) {
+				amount++;
+			}
+		}
+		return amount;
+	},
 	
 });
 
@@ -306,15 +371,16 @@ Crafty.c('PlayerCharacter', {
 Crafty.c('PassiveMob', {
 	init: function() {
 		this.requires('Actor, HitCircle, spr_mob')
-		.attr({ x: 200, y: 200, getAwayFromEdge: 0, accel: .05, maxSpeed: 4, intendedMovementX: 0, intendedMovementY: 0, movementX: 0, movementY: 0})
+		.attr({ x: 200, y: 200, getAwayFromEdge: 0, accel: .03, maxSpeed: 7, intendedMovementX: 0, intendedMovementY: 0, movementX: 0, movementY: 0, frameCreated: 0})
 		.radiusFunction("this._w/2");
 		
-		this._w = 32;
-		this._h = 32;
-		this.redrawHitCircle();
 		
-		// start game by randomizing position
+		
+		
+		// start game by randomizing size and position
 		this.playerCollided();
+		
+		this.redrawHitCircle();
 		
 		this.bind("EnterFrame", this.updateMotion);
 	},
@@ -393,13 +459,6 @@ Crafty.c('PassiveMob', {
 		var boundary = Crafty("Boundary");
 		var player = Crafty("PlayerCharacter");
 		
-		// find the square bounded by the boundary's hitCircle to know the outer bounds of where mob can spawn
-		var spread = boundary.hitCircle.radius / Math.sqrt(2);
-		
-		var proposedX;
-		var proposedY;
-		var withinFrame;
-		
 		var viewportRect = {
 			x: -Crafty.viewport.x,
 			y: -Crafty.viewport.y,
@@ -414,14 +473,47 @@ Crafty.c('PassiveMob', {
 			h: spread*2
 		}
 		
-		if ( Util.rectContainedInRect(spreadRect, viewportRect) ) {
-			// if(Game.isTrue) {
-			Game.mobArray.splice(Game.mobArray.indexOf(this),1);
+		if ( Util.rectContainedInRect(spreadRect, viewportRect)  ) {
+			Crafty('MobArray').remove(this);
 			this.destroy();
-			Game.checkIfWon();
 			return;
 		}
 		
+		// init size based on player size, score, and other mob sizes
+		
+		var lowest = Crafty('MobArray').lowestSize();
+		var average = Crafty('MobArray').averageSize();
+		var playerSize = player.hitCircle.radius;
+		var numMobsOverPlayerSize = Crafty('MobArray').amountOverSize(playerSize);
+		var randomSize;
+		
+		// make sure at least one mob is smaller than player
+		if (!lowest || lowest >= playerSize) {
+			var randomSize = playerSize/2;
+		}
+		else {
+			do {
+				// once the player hits a certain size, stop spawning bigger than player
+				if ( playerSize / boundary.hitCircle.radius < 0.1 && numMobsOverPlayerSize < 7*Crafty('MobArray').length()/8  ) {
+					randomSize = playerSize + Math.random()*3*playerSize;
+				}
+				else {
+					randomSize = playerSize/5 + Math.random()*9*playerSize/10;
+				}
+
+			} while (randomSize / boundary.hitCircle.radius > 0.15)	
+		}
+		
+		this._w = randomSize*2;
+		this._h = randomSize*2;
+		this.redrawHitCircle;
+		
+		// find the square bounded by the boundary's hitCircle to know the outer bounds of where mob can spawn
+		var spread = boundary.hitCircle.radius / Math.sqrt(2);
+		
+		var proposedX;
+		var proposedY;
+		var withinFrame;
 		var angle;
 		var mag;
 		
@@ -429,7 +521,7 @@ Crafty.c('PassiveMob', {
 			
 			// find vector to random spot in boundary
 			angle = 2* Math.PI * Math.random();
-			mag = Math.random() * boundary.hitCircle.radius;
+			mag = Math.random() * (boundary.hitCircle.radius - this.hitCircle.radius);
 			proposedX = mag * Math.cos(angle);
 			proposedY = mag * Math.sin(angle);			
 			
@@ -437,16 +529,23 @@ Crafty.c('PassiveMob', {
 			proposedX += boundary.center('x');
 			proposedY += boundary.center('y');
 			
-			if (proposedX > -Crafty.viewport.x && proposedX < -Crafty.viewport.x + Crafty.viewport.width && proposedY > -Crafty.viewport.y && proposedY < -Crafty.viewport.y + Crafty.viewport.height) {
+			// we've found a good center for the mob, now find the top-left corner for creation
+			// proposedX -= this.hitCircle.radius;
+			// proposedY -= this.hitCircle.radius;
+			
+			if (proposedX + this._w > -Crafty.viewport.x && proposedX < -Crafty.viewport.x + Crafty.viewport.width && proposedY + this._h > -Crafty.viewport.y && proposedY < -Crafty.viewport.y + Crafty.viewport.height) {
 				withinFrame = true;
 			}
 			else {
 				withinFrame = false;
 			}
-		} while(withinFrame)
+			
+		} while( (withinFrame && !Game.startUp) || (Game.startUp && mag < playerSize*15))
 		
 		this.x = proposedX;
 		this.y = proposedY;
+		
+		this.frameCreated = Crafty.frame;
 	}, 
 	
 	// for now redundant
@@ -467,9 +566,25 @@ Crafty.c('PassiveMob', {
 			this.movementX = 0;
 			this.movementY = 0;
 			this.getAwayFromEdge = 4;
+			this.stayAtEdgeWhileColliding();
 			// this.slideOnEdge(boundary);
 		}
 		// else this.resetMotion();
+	},
+	
+
+	
+	stayAtEdgeWhileColliding: function() {
+		var boundary = Crafty("Boundary");
+		var centerJoinComponentX = this.center('x') - boundary.center('x');
+		var centerJoinComponentY = this.center('y') - boundary.center('y');
+		var correctMagnitude = boundary.hitCircle.radius;
+		var currentMagnitude = this.hitCircle.radius + Math.sqrt( Math.pow( this.center("x") - boundary.center("x"), 2 ) + Math.pow( this.center("y") - boundary.center("y"), 2) );
+		var magnitudeCorrection = 1 - (correctMagnitude/currentMagnitude);
+		var xCorrection = -centerJoinComponentX * magnitudeCorrection;
+		var yCorrection = -centerJoinComponentY * magnitudeCorrection;
+		this.x += xCorrection;
+		this.y += yCorrection;
 	},
 	
 });
@@ -491,5 +606,16 @@ Crafty.c('Boundary', {
 	},
 });
 	
+Crafty.c('VictoryImage', {
+	init: function() {
+		this.requires('Actor, spr_victory')
+		.attr({x: Game.width/2 - this._w/2, y: Game.height/2 - this._h/2})
+	}
+});
 	
-	
+Crafty.c('DefeatImage', {
+	init: function() {
+		this.requires('Actor, spr_defeat')
+		.attr({x: Game.width/2 - this._w/2, y: Game.height/2 - this._h/2})
+	}
+});	
