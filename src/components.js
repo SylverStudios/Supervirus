@@ -682,7 +682,7 @@ Crafty.c('PassiveMob', {
 		else {
 			do {
 				// once the player hits a certain size, stop spawning bigger than player
-				if ( playerSize / boundary.hitCircle.radius < 0.1 && numMobsOverPlayerSize < 5*Crafty('MobArray').length()/8  ) {
+				if ( playerSize / boundary.hitCircle.radius < 0.1 && numMobsOverPlayerSize < Crafty('MobArray').length()*6/8  ) {
 					randomSize = playerSize + Math.random()*3*playerSize;
 				}
 				else {
