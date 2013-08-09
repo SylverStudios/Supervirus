@@ -8,7 +8,7 @@ Crafty.scene('Game', function() {
 	Crafty.e('Boundary');
 	Crafty.e('PlayerCharacter');
 	Crafty.e('MobArray');
-	for (var i = 0 ; i < 30 ; i++) {
+	for (var i = 0 ; i < 3 ; i++) {
 		Crafty('MobArray').add(Crafty.e('PassiveMob'));
 		// Crafty('MobArray').get(i)._w = 10 + 2*i;
 		// Crafty('MobArray').get(i)._h = 10 + 2*i;

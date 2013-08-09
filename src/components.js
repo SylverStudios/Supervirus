@@ -73,6 +73,194 @@ Crafty.c('HeadsUpDisplay', {
 	}
 	
 });
+
+// custom movement component with acceleration
+Crafty.c('PlayerMovement', {
+
+	init: function() {
+		this.requires('Actor, Keyboard')
+		.bind("KeyDown", this.move)
+	},
+
+	// init function
+	playerMovement: function(accel, maxSpeed) {
+		this._movement = { x: 0, y: 0 };
+		this._speed = { x: 0, y: 0 };
+		this._accel = accel;
+		this._maxSpeed = maxSpeed;
+	},
+
+	move: function() {
+		var x, y;
+		x = y = 0;
+		if ( this.isDown('UP_ARROW') ) {
+			y -= this._accel;
+		}
+		if ( this.isDown('DOWN_ARROW') ) {
+			y += this._accel;
+		}
+		if ( this.isDown('LEFT_ARROW') ) {
+			x -= this._accel;
+		}
+		if ( this.isDown('RIGHT_ARROW') ) {
+			x += this._accel;
+		}
+
+	}
+
+});
+
+
+Crafty.c("PlayerMovement", {
+
+  _keydown: function (e) {
+		if (this._keyDirection[e.key]) {
+			this._accel.x = this._keyDirection[e.key].x ? this._keyDirection[e.key].x : this._accel.x;
+			this._accel.y = this._keyDirection[e.key].y ? this._keyDirection[e.key].y : this._accel.y;
+			//this.trigger('NewDirection', this._accel);
+		}
+	},
+
+  _keyup: function (e) {
+		if (this._keyDirection[e.key]) {
+
+			this._accel.x = this.isDown(this._oppKey[e.key]) && this._keyDirection[e.key].x ? this._keyDirection[this._oppKey[e.key]].x : (this._keyDirection[e.key].x ? 0 : this._accel.x);
+			this._accel.y = this.isDown(this._oppKey[e.key]) && this._keyDirection[e.key].y ? this._keyDirection[this._oppKey[e.key]].y : (this._keyDirection[e.key].y ? 0 : this._accel.y);
+			//this.trigger('NewDirection', this._accel);
+		}
+	},
+
+  _enterframe: function () {
+		if (this.disableControls) return;
+
+		if (this._speed.x > 0) {
+
+			if( this._accel.x == 0 ) {
+				this._speed.x = this._speed.x < this._accelVal/2 ? 0 : this._speed.x - this._accelVal/2;
+			}
+			else if ( this._accel.x < 0 ) {
+				this._speed.x -= this._accelVal*2;
+			}
+			else {
+				this._speed.x += this._accel.x;
+			}
+		}
+		else if (this._speed.x < 0) {
+			if( this._accel.x == 0 ) {
+				this._speed.x = this._speed.x > -this._accelVal/2 ? 0 : this._speed.x + this._accelVal/2;
+			}
+			else if ( this._accel.x > 0 ) {
+				this._speed.x += this._accelVal*2;
+			}
+			else {
+				this._speed.x += this._accel.x;
+			}
+		}
+		else {
+			this._speed.x += this._accel.x;
+		}
+
+		if (this._speed.y > 0) {
+			if( this._accel.y == 0 ) {
+				this._speed.y = this._speed.y < this._accelVal/2 ? 0 : this._speed.y - this._accelVal/2;
+			}
+			else if ( this._accel.y < 0 ) {
+				this._speed.y -= this._accelVal*2;
+			}
+			else {
+				this._speed.y += this._accel.y;
+			}
+		}
+		else if (this._speed.y < 0) {
+			if( this._accel.y == 0 ) {
+				this._speed.y = this._speed.y > -this._accelVal/2 ? 0 : this._speed.y + this._accelVal/2;
+			}
+			else if ( this._accel.y > 0 ) {
+				this._speed.y += this._accelVal*2;
+			}
+			else {
+				this._speed.y += this._accel.y;
+			}
+		}
+		else {
+			this._speed.y += this._accel.y;
+		}
+
+		if (this._speed.x > this._maxSpeed) {
+			this._speed.x = this._maxSpeed;
+		}
+		else if (this._speed.x < -this._maxSpeed) {
+			this._speed.x = -this._maxSpeed;
+		}
+		if (this._speed.y > this._maxSpeed) {
+			this._speed.y = this._maxSpeed;
+		}
+		else if (this._speed.y < -this._maxSpeed) {
+			this._speed.y = -this._maxSpeed;
+		}
+
+		this._movement.x = this._speed.x;
+		this._movement.y = this._speed.y;
+
+		if (this._movement.x !== 0) {
+			this.x += this._movement.x;
+			this.trigger('Moved', { x: this.x - this._movement.x, y: this.y });
+		}
+		if (this._movement.y !== 0) {
+			this.y += this._movement.y;
+			this.trigger('Moved', { x: this.x, y: this.y - this._movement.y });
+		}
+
+	},
+
+	playerMovement: function (accel, maxSpeed) {
+		this._keyDirection = {
+			37: {x: -accel}, // left
+			38: {y: -accel}, // up
+			39: {x: accel}, // right
+			40: {y: accel}, // down
+		};
+		this._oppKey = {
+			37: 39, // left: right
+			38: 40, // up: down
+			39: 37, // right: left
+			40: 38, // down: up
+		}
+		this._movement = { x: 0, y: 0 };
+		this._speed = { x: 0, y: 0 };
+		this._accel = { x: 0, y: 0 };
+		this._accelVal = accel;
+		this._maxSpeed = maxSpeed;
+
+		this.disableControl();
+		this.enableControl();
+
+		//Apply movement if key is down when created
+		for (var k in this._keyDirection) {
+			if (Crafty.keydown[Crafty.keys[k]]) {
+				this.trigger("KeyDown", { key: Crafty.keys[k] });
+			}
+		}
+
+		return this;
+	},
+
+  enableControl: function() {
+		this.bind("KeyDown", this._keydown)
+		.bind("KeyUp", this._keyup)
+		.bind("EnterFrame", this._enterframe);
+		return this;
+  },
+
+  disableControl: function() {
+		this.unbind("KeyDown", this._keydown)
+		.unbind("KeyUp", this._keyup)
+		.unbind("EnterFrame", this._enterframe);
+		return this;
+  },
+
+});
+
  
 // This is the player-controlled character
 Crafty.c('PlayerCharacter', {
@@ -85,10 +273,10 @@ Crafty.c('PlayerCharacter', {
 		* spr_player: uses this sprite loaded in the Loading scene of scenes.js
 		* Keyboard: for detection of key presses and lifts
 		*/
-		this.requires('Actor, Fourway, HitCircle, spr_player, Keyboard')
+		this.requires('Actor, PlayerMovement, HitCircle, spr_player, Keyboard')
 		.attr({ x: Game.width/2 - this._w/2, y: Game.height/2 - this._h/2, zoomFactor: 0.995, growthFactor: 1 }) // .attr initializes fields in this entity object
 		.radiusFunction("this._w/2") // initiate HitCircle and tell it how to calculate the radius from now on
-		.fourway(4) // initialize the keyboard input motion system with a speed in pixels per tick
+		.playerMovement(.25, 6) // initialize the keyboard input motion system with a speed in pixels per tick
 		.onHit('PassiveMob', this.hitPassiveMob) // translation: when we collide with an entity called 'PassiveMob' execute function 'this.hitPassiveMob'
 	
 		// init width and height (defaults to sprite size which is much bigger)
@@ -109,7 +297,7 @@ Crafty.c('PlayerCharacter', {
 		this.bind("EnterFrame", this.hitBoundary);
 		
 		// on NewDirection (movement changes; either presses movement key or releases) reset motion
-		this.bind("NewDirection", this.resetMotion);
+		//this.bind("NewDirection", this.resetMotion);
 		
 		// sidescrolling action: change boundary location when moving
 		this.bind("Move", this.moveBoundary);
@@ -209,7 +397,7 @@ Crafty.c('PlayerCharacter', {
 		}
 		
 		else { 
-			this.resetMotion(); // this prevents permanent movement change from slideOnEdge
+			//this.resetMotion(); // this prevents permanent movement change from slideOnEdge
 		}
 	},
 	
@@ -494,7 +682,7 @@ Crafty.c('PassiveMob', {
 		else {
 			do {
 				// once the player hits a certain size, stop spawning bigger than player
-				if ( playerSize / boundary.hitCircle.radius < 0.1 && numMobsOverPlayerSize < 7*Crafty('MobArray').length()/8  ) {
+				if ( playerSize / boundary.hitCircle.radius < 0.1 && numMobsOverPlayerSize < 5*Crafty('MobArray').length()/8  ) {
 					randomSize = playerSize + Math.random()*3*playerSize;
 				}
 				else {
