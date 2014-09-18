@@ -1,16 +1,20 @@
 // An "Actor" is an entity that is drawn in 2D on canvas
 //  via ou
 Crafty.c('Actor', {
+
 	init: function() {
 		this.requires('2D, Canvas, Center');
-	},
+	}
+
 });
 
 // gives the 'center' function for a 2D entity to find it's center coordinates
 Crafty.c('Center', {
+
 	init: function() {
 		this.requires('2D, Canvas');
 	},
+
 	center: function(component) {
 		if(component==="x")
 		return this._x + this._w/2;
@@ -18,12 +22,14 @@ Crafty.c('Center', {
 		return this._y + this._h/2;
 		else
 		console.error("must specify \'x\' or \'y\' for function \'center\'");
-	},
+	}
+
 });
 
 // gives collision detection via a bounding circle
 // for now assumes: center of hit circle is center of sprite, radius function only uses properties of "this" instead of local vars
 Crafty.c('HitCircle', {
+
 	init: function() {
 		this.requires('Collision')
 		.attr({_radiusFunction: "", hitCircle: null})
@@ -41,10 +47,12 @@ Crafty.c('HitCircle', {
 	redrawHitCircle: function() {
 		this.hitCircle = new Crafty.circle(this._w/2, this._h/2, eval(this._radiusFunction));
 		this.collision(this.hitCircle);
-	},
+	}
+
 });
 
 Crafty.c('HeadsUpDisplay', {
+
 	init: function() {
 		this.requires('2D, DOM, Text')
 		.attr({ x: Crafty.viewport.x + 20, y: Crafty.viewport.y + 20, score: 0, w: 250 })
@@ -105,7 +113,6 @@ Crafty.c('PlayerMovement', {
 		if ( this.isDown('RIGHT_ARROW') ) {
 			x += this._accel;
 		}
-
 	}
 
 });
@@ -113,7 +120,7 @@ Crafty.c('PlayerMovement', {
 
 Crafty.c("PlayerMovement", {
 
-  _keydown: function (e) {
+	_keydown: function (e) {
 		if (this._keyDirection[e.key]) {
 			this._accel.x = this._keyDirection[e.key].x ? this._keyDirection[e.key].x : this._accel.x;
 			this._accel.y = this._keyDirection[e.key].y ? this._keyDirection[e.key].y : this._accel.y;
@@ -121,7 +128,7 @@ Crafty.c("PlayerMovement", {
 		}
 	},
 
-  _keyup: function (e) {
+	_keyup: function (e) {
 		if (this._keyDirection[e.key]) {
 
 			this._accel.x = this.isDown(this._oppKey[e.key]) && this._keyDirection[e.key].x ? this._keyDirection[this._oppKey[e.key]].x : (this._keyDirection[e.key].x ? 0 : this._accel.x);
@@ -130,7 +137,7 @@ Crafty.c("PlayerMovement", {
 		}
 	},
 
-  _enterframe: function () {
+	_enterframe: function () {
 		if (this.disableControls) return;
 
 		if (this._speed.x > 0) {
@@ -225,7 +232,7 @@ Crafty.c("PlayerMovement", {
 			38: 40, // up: down
 			39: 37, // right: left
 			40: 38, // down: up
-		}
+		};
 		this._movement = { x: 0, y: 0 };
 		this._speed = { x: 0, y: 0 };
 		this._accel = { x: 0, y: 0 };
@@ -245,19 +252,19 @@ Crafty.c("PlayerMovement", {
 		return this;
 	},
 
-  enableControl: function() {
+	enableControl: function() {
 		this.bind("KeyDown", this._keydown)
 		.bind("KeyUp", this._keyup)
 		.bind("EnterFrame", this._enterframe);
 		return this;
-  },
+	},
 
-  disableControl: function() {
+	disableControl: function() {
 		this.unbind("KeyDown", this._keydown)
 		.unbind("KeyUp", this._keyup)
 		.unbind("EnterFrame", this._enterframe);
 		return this;
-  },
+	}
 
 });
 
@@ -494,11 +501,12 @@ Crafty.c('PlayerCharacter', {
 		var yCorrection = -centerJoinComponentY * magnitudeCorrection;
 		this.x += xCorrection;
 		this.y += yCorrection;
-	},
+	}
 	
 });
 
 Crafty.c('MobArray', {
+
 	init: function() {
 		this.attr({ _array: [] });
 	},
@@ -551,12 +559,13 @@ Crafty.c('MobArray', {
 			}
 		}
 		return amount;
-	},
+	}
 	
 });
 
 // edible passive mobs. 
 Crafty.c('PassiveMob', {
+
 	init: function() {
 		this.requires('Actor, HitCircle, spr_mob')
 		.attr({ x: 200, y: 200, getAwayFromEdge: 0, accel: .03, maxSpeed: 7, intendedMovementX: 0, intendedMovementY: 0, movementX: 0, movementY: 0, frameCreated: 0})
@@ -760,8 +769,6 @@ Crafty.c('PassiveMob', {
 		// else this.resetMotion();
 	},
 	
-
-	
 	stayAtEdgeWhileColliding: function() {
 		var boundary = Crafty("Boundary");
 		var centerJoinComponentX = this.center('x') - boundary.center('x');
@@ -773,12 +780,13 @@ Crafty.c('PassiveMob', {
 		var yCorrection = -centerJoinComponentY * magnitudeCorrection;
 		this.x += xCorrection;
 		this.y += yCorrection;
-	},
+	}
 	
 });
 
 // this is the petri dish circular boundary
 Crafty.c('Boundary', {
+
 	init: function() {
 		this.requires('Actor, HitCircle, spr_boundary')
 		.origin('center')
@@ -791,19 +799,24 @@ Crafty.c('Boundary', {
 		this.y = Game.height/2 - this._h/2;
 			
 		this.redrawHitCircle();
-	},
+	}
+
 });
 	
 Crafty.c('VictoryImage', {
+
 	init: function() {
 		this.requires('Actor, spr_victory')
 		.attr({x: Game.width/2 - this._w/2, y: Game.height/2 - this._h/2})
 	}
+
 });
 	
 Crafty.c('DefeatImage', {
+
 	init: function() {
 		this.requires('Actor, spr_defeat')
 		.attr({x: Game.width/2 - this._w/2, y: Game.height/2 - this._h/2})
 	}
-});	
+
+});
