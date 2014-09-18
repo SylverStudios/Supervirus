@@ -5,18 +5,26 @@ body {
 	font-family: Arial;
 }
 
+.header {
+	color: white;
+	font-size: 24px;
+}
+
 .controls {
 	color: #BBB;
+	margin-top: 8px;
 }
 
-#cr-stage { margin: 20px auto 0; }
+#cr-stage {
+	margin: 20px auto 0;
+}
 
-.bottom {
+.footer {
 	font-size: 12px;
 	color: #888;
-	margin-top: 50px;
+	margin-top: 20px;
 }
 
-.bottom a {
+.footer a {
 	color: #AAA;
 }

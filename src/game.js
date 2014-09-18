@@ -1,10 +1,8 @@
 Game = {
 
-	// The total width of the game screen.
-	width: 800,
+	width: 1000,
 
-	// The total height of the game screen.
-	height: 600,
+	height: 700,
 
 	score: 0,
 
