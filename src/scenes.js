@@ -2,17 +2,14 @@
 // -------------
 // Runs the core gameplay loop
 Crafty.scene('Game', function() {
-	
+
 	Game.startUp = true;
-	
+
 	Crafty.e('Boundary');
 	Crafty.e('PlayerCharacter');
 	Crafty.e('MobArray');
 	for (var i = 0 ; i < 30 ; i++) {
 		Crafty('MobArray').add(Crafty.e('PassiveMob'));
-		// Crafty('MobArray').get(i)._w = 10 + 2*i;
-		// Crafty('MobArray').get(i)._h = 10 + 2*i;
-		// Crafty('MobArray').get(i).redrawHitCircle();
 	}
 	Crafty.e('HeadsUpDisplay');
 	Crafty('PlayerCharacter').attach(Crafty('HeadsUpDisplay'));
@@ -38,7 +35,7 @@ Crafty.scene('Victory', function() {
 
 	Crafty.viewport.scroll('_x', 0 );
 	Crafty.viewport.scroll('_y', 0 );
-	
+
 	Crafty.e('VictoryImage');
 });
 
@@ -46,9 +43,9 @@ Crafty.scene('Defeat', function() {
 
 	Crafty.viewport.scroll('_x', 0 );
 	Crafty.viewport.scroll('_y', 0 );
-	
+
 	Crafty.e('DefeatImage');
-	
+
 	Crafty.e('2D, DOM, Text')
 	.text('your score wuz ' + Game.score + '...press space to reload')
 	.attr({ x: 0, y: Game.height - 80, w: Game.width })
@@ -96,7 +93,7 @@ Crafty.scene('Loading', function(){
 	Crafty.load([
 		'assets/defeatimage.png',
 		'assets/passivemob_256x256.png',
-		'assets/virus_256x256.png', 
+		'assets/virus_256x256.png',
 		'assets/petri_plaincircle.png',
 		'assets/victoryimage.png'
 		], function(){
@@ -112,7 +109,7 @@ Crafty.scene('Loading', function(){
 			Crafty.sprite(580, 'assets/petri_plaincircle.png', {
 				spr_boundary: [0, 0]
 			});
-			
+
 			Crafty.sprite(256, 'assets/victoryimage.png', {
 				spr_victory: [0, 0]
 			});

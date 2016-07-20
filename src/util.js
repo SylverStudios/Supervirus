@@ -1,5 +1,5 @@
-Util = {
-	
+window.Util = {
+
 	// returns slope given the components of a vector. NOTE: Y-component goes first.
 	getSlope: function(rise, run) {
 		var slope;
@@ -10,7 +10,7 @@ Util = {
 		else slope = rise / run;
 		return slope;
 	},
-	
+
 	// returns the dot product of two arrays of vector components
 	dotProduct: function(firstComponents, secondComponents) {
 		if( !firstComponents instanceof Array || !secondComponents instanceof Array ) {
@@ -27,7 +27,7 @@ Util = {
 		}
 		return dotProduct;
 	},
-	
+
 	rectContainedInRect: function(rect2, rect1) {
 		if (rect1.x < rect2.x && rect1.x+rect1.w > rect2.x+rect2.w && rect1.y < rect2.y && rect1.y+rect1.h > rect2.y+rect2.h) {
 			return true;
@@ -36,7 +36,7 @@ Util = {
 			return false;
 		}
 	}
-	
+
 }
 
 function simulate(element, eventName)
