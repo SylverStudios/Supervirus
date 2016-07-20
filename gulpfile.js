@@ -24,14 +24,14 @@ var htmlArtifact = 'index.html';
 var htmlArtifactFull = buildDir + htmlArtifact;
 var jsEntry = 'entrypoint.js';
 var jsEntryFull = srcDir + jsEntry;
-var jsxArtifact = 'app.js';
-var jsxArtifactFull = buildDir + jsxArtifact;
+var jsArtifact = 'app.js';
+var jsArtifactFull = buildDir + jsArtifact;
 var scssEntry = 'entrypoint.scss';
 var scssEntryFull = srcDir + scssEntry;
 var scssArtifact = 'app.css';
 var scssArtifactFull = buildDir + scssArtifact;
 
-var webpackConfig = generateWebpackConfig(jsEntryFull, jsxArtifact);
+var webpackConfig = generateWebpackConfig(jsEntryFull, jsArtifact);
 
 function fsExistsSync(filePath) {
   try {
@@ -60,16 +60,25 @@ var taskFuncs = {
   'clean-html': function() {
     if (fsExistsSync(htmlArtifactFull)) fs.unlinkSync(htmlArtifactFull);
   },
-  'clean-jsx': function() {
-    if (fsExistsSync(jsxArtifactFull)) fs.unlinkSync(jsxArtifactFull);
+  'clean-js': function() {
+    if (fsExistsSync(jsArtifactFull)) fs.unlinkSync(jsArtifactFull);
   },
   'clean-scss': function() {
     if (fsExistsSync(scssArtifactFull)) fs.unlinkSync(scssArtifactFull);
   },
+
+  'build-assets': function() {
+    gulp.src('assets/*').pipe(copy(buildDir));
+  },
+
   'compile-html': function() {
     gulp.src(htmlEntryFull).pipe(copy(buildDir, {prefix: 1}));
   },
-  'compile-jsx': function() {
+  'copy-libs': function() {
+    gulp.src('lib/crafty.js')
+      .pipe(copy(buildDir, {prefix: 1}));
+  },
+  'compile-js': function() {
     return doWebpack(webpackConfig.getConfig(environment));
   },
   'compile-scss': function() {
@@ -87,7 +96,7 @@ var taskFuncs = {
   'watch-html': function() {
     return gulp.watch([srcDir + '**/*.html'], ['compile-html']);
   },
-  'watch-jsx': function() {
+  'watch-js': function() {
     var config = webpackConfig.getConfig(environment);
     config.watch = true;
     return doWebpack(config);
@@ -95,8 +104,8 @@ var taskFuncs = {
   'watch-scss': function() {
     return gulp.watch([srcDir + '**/*.scss'], ['compile-scss']);
   },
-  'lint-jsx': function() {
-    return gulp.src(['src/**/*.{js,jsx}', '!node_modules/**'])
+  'lint-js': function() {
+    return gulp.src(['src/**/*.js', '!node_modules/**'])
       .pipe(eslint())
       .pipe(eslint.format())
       .pipe(eslint.failAfterError())
@@ -115,22 +124,25 @@ var taskFuncs = {
 gulp.task('setup-build', taskFuncs['setup-build']);
 
 gulp.task('clean-html', ['setup-build'], taskFuncs['clean-html']);
-gulp.task('clean-jsx', ['setup-build'], taskFuncs['clean-jsx']);
+gulp.task('clean-js', ['setup-build'], taskFuncs['clean-js']);
 gulp.task('clean-scss', ['setup-build'], taskFuncs['clean-scss']);
-gulp.task('clean', ['clean-html', 'clean-jsx', 'clean-scss']);
+gulp.task('clean', ['clean-html', 'clean-js', 'clean-scss']);
 
+gulp.task('copy-libs', ['setup-build'], taskFuncs['copy-libs']);
+
+gulp.task('build-assets', ['setup-build'], taskFuncs['build-assets']);
 gulp.task('compile-html', ['setup-build'], taskFuncs['compile-html']);
-gulp.task('compile-jsx', ['setup-build'], taskFuncs['compile-jsx']);
+gulp.task('compile-js', ['setup-build', 'copy-libs'], taskFuncs['compile-js']);
 gulp.task('compile-scss', ['setup-build'], taskFuncs['compile-scss']);
-gulp.task('compile', ['compile-html', 'compile-jsx', 'compile-scss']);
+gulp.task('compile', ['build-assets', 'compile-html', 'compile-js', 'compile-scss']);
 
 gulp.task('watch-html', ['compile-html'], taskFuncs['watch-html']);
-gulp.task('watch-jsx', taskFuncs['watch-jsx']);
+gulp.task('watch-js', ['compile-js'], taskFuncs['watch-js']);
 gulp.task('watch-scss', ['compile-scss'], taskFuncs['watch-scss']);
-gulp.task('watch', ['watch-html', 'watch-jsx', 'watch-scss']);
+gulp.task('watch', ['watch-html', 'watch-js', 'watch-scss']);
 
-gulp.task('lint-jsx', taskFuncs['lint-jsx']);
+gulp.task('lint-js', taskFuncs['lint-js']);
 gulp.task('lint-scss', taskFuncs['lint-scss']);
-gulp.task('lint', ['lint-jsx', 'lint-scss']);
+gulp.task('lint', ['lint-js', 'lint-scss']);
 
 gulp.task('serve', taskFuncs['serve']);
