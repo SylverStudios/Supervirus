@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 // Game scene
 // -------------
 // Runs the core gameplay loop
