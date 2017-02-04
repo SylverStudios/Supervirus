@@ -20,7 +20,7 @@ const devPlugins = isDevelopment ? [] : [
 
 module.exports = {
   context: __dirname,
-  entry: './app/main.js', // js entrypoint
+  entry: './app/main.jsx', // js entrypoint
   output: { // configuration for webpack output / build directory
     path: path.resolve(__dirname, 'build/'), // define build directory
     publicPath: '/', // webpack-dev-server uses this to determine where output files are expected to be served from
