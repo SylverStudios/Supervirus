@@ -1,5 +1,6 @@
 import images, { allImagesLoaded } from './images';
 import config from './config';
+import { computeActivity, computeVelocity, DIRECTION } from './motion';
 
 function drawBackground(context, originX, originY, size) {
   context.drawImage(
@@ -86,49 +87,18 @@ function initGame(canvas) {
   function mainLoop() {
     const frameStartTime = (new Date()).getTime();
 
-    // compute velocity
-    if (pressingArrowUp) {
-      if (playerVelocityY < 0) { // already moving up
-        playerVelocityY -= accelerationPerFrame;
-      } else { // currently moving down, so provide more acceleration up
-        playerVelocityY -= activeDecelerationPerFrame;
-      }
-    } else if (pressingArrowDown) {
-      if (playerVelocityY > 0) {
-        playerVelocityY += accelerationPerFrame;
-      } else {
-        playerVelocityY += activeDecelerationPerFrame;
-      }
-    } else if (playerVelocityY > 0) { // no player input, passively decelerate if currently moving
-      playerVelocityY -= passiveDecelerationPerFrame;
-      playerVelocityY = Math.max(playerVelocityY, 0);
-    } else if (playerVelocityY < 0) {
-      playerVelocityY += passiveDecelerationPerFrame;
-      playerVelocityY = Math.min(playerVelocityY, 0);
-    }
-    if (pressingArrowLeft) {
-      if (playerVelocityX < 0) {
-        playerVelocityX -= accelerationPerFrame;
-      } else {
-        playerVelocityX -= activeDecelerationPerFrame;
-      }
-    } else if (pressingArrowRight) {
-      if (playerVelocityX > 0) {
-        playerVelocityX += accelerationPerFrame;
-      } else {
-        playerVelocityX += activeDecelerationPerFrame;
-      }
-    } else if (playerVelocityX > 0) {
-      playerVelocityX -= passiveDecelerationPerFrame;
-      playerVelocityX = Math.max(playerVelocityX, 0);
-    } else if (playerVelocityX < 0) {
-      playerVelocityX += passiveDecelerationPerFrame;
-      playerVelocityX = Math.min(playerVelocityX, 0);
-    }
-    playerVelocityY = Math.min(playerVelocityY, maxSpeedPerFrame);
-    playerVelocityY = Math.max(playerVelocityY, -maxSpeedPerFrame);
-    playerVelocityX = Math.min(playerVelocityX, maxSpeedPerFrame);
-    playerVelocityX = Math.max(playerVelocityX, -maxSpeedPerFrame);
+    const newVelocity = computeVelocity(
+      playerVelocityX,
+      playerVelocityY,
+      computeActivity(pressingArrowLeft, pressingArrowRight),
+      computeActivity(pressingArrowUp, pressingArrowDown),
+      accelerationPerFrame,
+      activeDecelerationPerFrame,
+      passiveDecelerationPerFrame,
+      maxSpeedPerFrame,
+    );
+    playerVelocityX = newVelocity.x;
+    playerVelocityY = newVelocity.y;
 
     // player stays in middle of screen, so move origin instead of player
     originX -= playerVelocityX;
