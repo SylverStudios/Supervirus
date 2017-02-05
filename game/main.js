@@ -76,23 +76,54 @@ function initGame(canvas) {
     }
   });
 
-  const frameRate = 60; // frames per second
-  const frameDuration = 1000 / frameRate; // in millis
+  const frameDuration = 1000 / config.frameRate; // in millis
+  const accelerationPerFrame = config.acceleration / config.frameRate;
+  // when player moves in opposite direction than already moving
+  const activeDecelerationPerFrame = accelerationPerFrame * 2;
+  // when there is no player input and player is currently moving, should slow down
+  const passiveDecelerationPerFrame = accelerationPerFrame / 2;
+  const maxSpeedPerFrame = config.maxSpeed / config.frameRate;
   function mainLoop() {
     const frameStartTime = (new Date()).getTime();
 
     // compute velocity
-    const accelerationPerFrame = config.acceleration / frameRate;
-    const maxSpeedPerFrame = config.maxSpeed / frameRate;
     if (pressingArrowUp) {
-      playerVelocityY -= accelerationPerFrame;
+      if (playerVelocityY < 0) { // already moving up
+        playerVelocityY -= accelerationPerFrame;
+      } else { // currently moving down, so provide more acceleration up
+        playerVelocityY -= activeDecelerationPerFrame;
+      }
     } else if (pressingArrowDown) {
-      playerVelocityY += accelerationPerFrame;
+      if (playerVelocityY > 0) {
+        playerVelocityY += accelerationPerFrame;
+      } else {
+        playerVelocityY += activeDecelerationPerFrame;
+      }
+    } else if (playerVelocityY > 0) { // no player input, passively decelerate if currently moving
+      playerVelocityY -= passiveDecelerationPerFrame;
+      playerVelocityY = Math.max(playerVelocityY, 0);
+    } else if (playerVelocityY < 0) {
+      playerVelocityY += passiveDecelerationPerFrame;
+      playerVelocityY = Math.min(playerVelocityY, 0);
     }
     if (pressingArrowLeft) {
-      playerVelocityX -= accelerationPerFrame;
+      if (playerVelocityX < 0) {
+        playerVelocityX -= accelerationPerFrame;
+      } else {
+        playerVelocityX -= activeDecelerationPerFrame;
+      }
     } else if (pressingArrowRight) {
-      playerVelocityX += accelerationPerFrame;
+      if (playerVelocityX > 0) {
+        playerVelocityX += accelerationPerFrame;
+      } else {
+        playerVelocityX += activeDecelerationPerFrame;
+      }
+    } else if (playerVelocityX > 0) {
+      playerVelocityX -= passiveDecelerationPerFrame;
+      playerVelocityX = Math.max(playerVelocityX, 0);
+    } else if (playerVelocityX < 0) {
+      playerVelocityX += passiveDecelerationPerFrame;
+      playerVelocityX = Math.min(playerVelocityX, 0);
     }
     playerVelocityY = Math.min(playerVelocityY, maxSpeedPerFrame);
     playerVelocityY = Math.max(playerVelocityY, -maxSpeedPerFrame);
