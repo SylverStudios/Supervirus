@@ -1,51 +1,58 @@
-/* eslint-disable no-undef */
-const virusSpritePath = require('../assets/virus_256x256.png');
-const backgroundImagePath = require('../assets/petri_plaincircle_withgrid.png');
+import images, { allImagesLoaded } from './images';
 
-export default function Game(canvas) {
+function drawBackground(context, originX, originY, size) {
+  context.drawImage(
+    images.background,
+    originX - (size / 2),
+    originY - (size / 2),
+    size,
+    size,
+  );
+}
+
+function drawVirus(context, canvasMiddleX, canvasMiddleY, size) {
+  context.drawImage(
+    images.virus,
+    canvasMiddleX - (size / 2),
+    canvasMiddleY - (size / 2),
+    size,
+    size,
+  );
+}
+
+function initGame(canvas) {
   const canvasWidth = canvas.width;
   const canvasHeight = canvas.height;
   const canvasMiddleX = canvasWidth / 2;
   const canvasMiddleY = canvasHeight / 2;
+  let originX = canvasMiddleX;
+  let originY = canvasMiddleY;
 
   const context = canvas.getContext('2d');
 
-  const backgroundImage = new Image();
   const backgroundImageStartingSize = 1200;
-  const backgroundImageStartingX = canvasMiddleX - (backgroundImageStartingSize / 2);
-  const backgroundImageStartingY = canvasMiddleY - (backgroundImageStartingSize / 2);
-  backgroundImage.onload = () => (
-    context.drawImage(
-      backgroundImage,
-      backgroundImageStartingX,
-      backgroundImageStartingY,
-      backgroundImageStartingSize,
-      backgroundImageStartingSize,
-    )
-  );
-  backgroundImage.src = backgroundImagePath;
+  drawBackground(context, originX, originY, backgroundImageStartingSize);
 
-  const virusImage = new Image();
   const virusStartingSize = 32;
-  const virusStartingX = canvasMiddleX - (virusStartingSize / 2);
-  const virusStartingY = canvasMiddleY - (virusStartingSize / 2);
-  virusImage.onload = () => (
-    context.drawImage(
-      virusImage,
-      virusStartingX,
-      virusStartingY,
-      virusStartingSize,
-      virusStartingSize,
-    )
-  );
-  virusImage.src = virusSpritePath;
+  drawVirus(context, canvasMiddleX, canvasMiddleY, virusStartingSize);
+
+  // TODO obviously these shouldn't be constant
+  const playerVelocityX = -2;
+  const playerVelocityY = -2;
 
   const frameRate = 60; // frames per second
   const frameDuration = 1000 / frameRate; // in millis
   function mainLoop() {
     const frameStartTime = (new Date()).getTime();
 
-    // TODO main loop content
+    // player stays in middle of screen, so move origin instead of player
+    originX += playerVelocityX;
+    originY += playerVelocityY;
+    // update all non-player images wrt new origin
+    // clear everything
+    context.clearRect(0, 0, canvasWidth, canvasHeight);
+    drawBackground(context, originX, originY, backgroundImageStartingSize);
+    drawVirus(context, canvasMiddleX, canvasMiddleY, virusStartingSize);
 
     const frameEndTime = (new Date()).getTime();
     const thisFrameDuration = frameEndTime - frameStartTime;
@@ -53,4 +60,8 @@ export default function Game(canvas) {
     setTimeout(mainLoop, waitTilNextFrame);
   }
   mainLoop();
+}
+
+export default function Game(canvas) {
+  allImagesLoaded.then(() => initGame(canvas));
 }
