@@ -38,7 +38,7 @@ module.exports = {
       },
       { // scss: compile sass, make paths relative, resolve urls, and extract to file
         test: /\.scss$/, // only affect .scss files
-        loader: ExtractTextPlugin.extract(['css-loader', 'postcss-loader', 'resolve-url-loader', 'sass-loader?sourceMap']),
+        loader: ExtractTextPlugin.extract(['css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]', 'postcss-loader', 'resolve-url-loader', 'sass-loader?sourceMap']),
       },
     ],
   },

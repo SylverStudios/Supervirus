@@ -1,8 +1,8 @@
 import React from 'react';
-import './App.scss';
+import styles from './App.scss';
 
 const App = () => (
-  <div className="app">
+  <div className={styles.app}>
     sup
   </div>
 );
