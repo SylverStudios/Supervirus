@@ -36,18 +36,70 @@ function initGame(canvas) {
   const virusStartingSize = 32;
   drawVirus(context, canvasMiddleX, canvasMiddleY, virusStartingSize);
 
-  // TODO obviously these shouldn't be constant
-  const playerVelocityX = -2;
-  const playerVelocityY = -2;
+  let playerVelocityX = 0;
+  let playerVelocityY = 0;
+  let pressingArrowUp = false;
+  let pressingArrowDown = false;
+  let pressingArrowLeft = false;
+  let pressingArrowRight = false;
+  window.addEventListener('keydown', (event) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        pressingArrowUp = true;
+        break;
+      case 'ArrowDown':
+        pressingArrowDown = true;
+        break;
+      case 'ArrowLeft':
+        pressingArrowLeft = true;
+        break;
+      case 'ArrowRight':
+        pressingArrowRight = true;
+        break;
+      default:
+    }
+  });
+  window.addEventListener('keyup', (event) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        pressingArrowUp = false;
+        break;
+      case 'ArrowDown':
+        pressingArrowDown = false;
+        break;
+      case 'ArrowLeft':
+        pressingArrowLeft = false;
+        break;
+      case 'ArrowRight':
+        pressingArrowRight = false;
+        break;
+      default:
+    }
+  });
 
   const frameRate = 60; // frames per second
   const frameDuration = 1000 / frameRate; // in millis
   function mainLoop() {
     const frameStartTime = (new Date()).getTime();
 
+    if (pressingArrowUp) {
+      playerVelocityY = -2;
+    } else if (pressingArrowDown) {
+      playerVelocityY = 2;
+    } else {
+      playerVelocityY = 0;
+    }
+    if (pressingArrowLeft) {
+      playerVelocityX = -2;
+    } else if (pressingArrowRight) {
+      playerVelocityX = 2;
+    } else {
+      playerVelocityX = 0;
+    }
+
     // player stays in middle of screen, so move origin instead of player
-    originX += playerVelocityX;
-    originY += playerVelocityY;
+    originX -= playerVelocityX;
+    originY -= playerVelocityY;
     // update all non-player images wrt new origin
     // clear everything
     context.clearRect(0, 0, canvasWidth, canvasHeight);
