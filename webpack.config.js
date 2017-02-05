@@ -32,6 +32,7 @@ module.exports = {
         test: /\.jsx?$/, // only affect .js or .jsx files
         include: [
           path.resolve(__dirname, 'app'), // only affect files in ./app
+          path.resolve(__dirname, 'game'), // only affect files in ./app
         ],
         loader: 'babel-loader', // loader to use
         query: { presets: ['es2015', 'react', 'stage-3'] }, // configuration for babel-loader
