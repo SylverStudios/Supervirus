@@ -1,6 +1,8 @@
 import React from 'react';
 import styles from './App.scss';
 
+import GameCanvas from './GameCanvas';
+
 const App = () => (
   <div>
     <h2 className={styles.header}>Supervirus</h2>
@@ -9,7 +11,7 @@ const App = () => (
       things larger than you. Godspeed.
     </p>
     <div className={styles.canvasContainer}>
-      TODO put da canvas here ya
+      <GameCanvas />
     </div>
     <p className={styles.bottom}>
       Development of game Supervirus by Sylver Studios

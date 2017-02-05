@@ -40,6 +40,10 @@ module.exports = {
         test: /\.scss$/, // only affect .scss files
         loader: ExtractTextPlugin.extract(['css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]', 'postcss-loader', 'resolve-url-loader', 'sass-loader?sourceMap']),
       },
+      { // load files (here, specifically, images). this allows us to refer to source paths.
+        test: /\.png$/,
+        loader: 'file-loader',
+      },
     ],
   },
   // if building in development mode, provide source map with js output so browser dev tools can
