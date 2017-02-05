@@ -1,6 +1,7 @@
 import images, { allImagesLoaded } from './images';
 import config from './config';
-import { computeActivity, computeVelocity, DIRECTION } from './motion';
+import { computeActivity, computeVelocity } from './motion';
+import { colliding } from './collision';
 
 function drawBackground(context, originX, originY, size) {
   context.drawImage(
@@ -84,8 +85,24 @@ function initGame(canvas) {
   // when there is no player input and player is currently moving, should slow down
   const passiveDecelerationPerFrame = accelerationPerFrame / 2;
   const maxSpeedPerFrame = config.maxSpeed / config.frameRate;
+  const playerHitCircleRadius = config.virusStartingSize / 2;
+  const boundaryHitCircleRadius =
+    (config.backgroundImageStartingSize / 2) - (config.backgroundImageStartingSize / 58);
   function mainLoop() {
     const frameStartTime = (new Date()).getTime();
+
+    const playerIsCollidingWithBoundary = colliding(
+      canvasMiddleX,
+      canvasMiddleY,
+      originX,
+      originY,
+      playerHitCircleRadius,
+      boundaryHitCircleRadius,
+    );
+    if (playerIsCollidingWithBoundary) {
+      // TODO deal with fact that player is colliding with boundary
+      console.log('colliding!');
+    }
 
     const newVelocity = computeVelocity(
       playerVelocityX,
