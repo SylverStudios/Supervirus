@@ -1,4 +1,5 @@
 import images, { allImagesLoaded } from './images';
+import config from './config';
 
 function drawBackground(context, originX, originY, size) {
   context.drawImage(
@@ -30,11 +31,9 @@ function initGame(canvas) {
 
   const context = canvas.getContext('2d');
 
-  const backgroundImageStartingSize = 1200;
-  drawBackground(context, originX, originY, backgroundImageStartingSize);
+  drawBackground(context, originX, originY, config.backgroundImageStartingSize);
 
-  const virusStartingSize = 32;
-  drawVirus(context, canvasMiddleX, canvasMiddleY, virusStartingSize);
+  drawVirus(context, canvasMiddleX, canvasMiddleY, config.virusStartingSize);
 
   let playerVelocityX = 0;
   let playerVelocityY = 0;
@@ -83,10 +82,8 @@ function initGame(canvas) {
     const frameStartTime = (new Date()).getTime();
 
     // compute velocity
-    const acceleration = 7.5; // velocity change per second when player is moving
-    const accelerationPerFrame = acceleration / frameRate;
-    const maxSpeed = 180; // displacement per second (per dimension)
-    const maxSpeedPerFrame = maxSpeed / frameRate;
+    const accelerationPerFrame = config.acceleration / frameRate;
+    const maxSpeedPerFrame = config.maxSpeed / frameRate;
     if (pressingArrowUp) {
       playerVelocityY -= accelerationPerFrame;
     } else if (pressingArrowDown) {
@@ -108,8 +105,8 @@ function initGame(canvas) {
     // update all non-player images wrt new origin
     // clear everything
     context.clearRect(0, 0, canvasWidth, canvasHeight);
-    drawBackground(context, originX, originY, backgroundImageStartingSize);
-    drawVirus(context, canvasMiddleX, canvasMiddleY, virusStartingSize);
+    drawBackground(context, originX, originY, config.backgroundImageStartingSize);
+    drawVirus(context, canvasMiddleX, canvasMiddleY, config.virusStartingSize);
 
     const frameEndTime = (new Date()).getTime();
     const thisFrameDuration = frameEndTime - frameStartTime;
