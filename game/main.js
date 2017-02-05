@@ -39,4 +39,18 @@ export default function Game(canvas) {
     )
   );
   virusImage.src = virusSpritePath;
+
+  const frameRate = 60; // frames per second
+  const frameDuration = 1000 / frameRate; // in millis
+  function mainLoop() {
+    const frameStartTime = (new Date()).getTime();
+
+    // TODO main loop content
+
+    const frameEndTime = (new Date()).getTime();
+    const thisFrameDuration = frameEndTime - frameStartTime;
+    const waitTilNextFrame = Math.max(frameDuration - thisFrameDuration, 0);
+    setTimeout(mainLoop, waitTilNextFrame);
+  }
+  mainLoop();
 }
