@@ -82,20 +82,25 @@ function initGame(canvas) {
   function mainLoop() {
     const frameStartTime = (new Date()).getTime();
 
+    // compute velocity
+    const acceleration = 7.5; // velocity change per second when player is moving
+    const accelerationPerFrame = acceleration / frameRate;
+    const maxSpeed = 180; // displacement per second (per dimension)
+    const maxSpeedPerFrame = maxSpeed / frameRate;
     if (pressingArrowUp) {
-      playerVelocityY = -2;
+      playerVelocityY -= accelerationPerFrame;
     } else if (pressingArrowDown) {
-      playerVelocityY = 2;
-    } else {
-      playerVelocityY = 0;
+      playerVelocityY += accelerationPerFrame;
     }
     if (pressingArrowLeft) {
-      playerVelocityX = -2;
+      playerVelocityX -= accelerationPerFrame;
     } else if (pressingArrowRight) {
-      playerVelocityX = 2;
-    } else {
-      playerVelocityX = 0;
+      playerVelocityX += accelerationPerFrame;
     }
+    playerVelocityY = Math.min(playerVelocityY, maxSpeedPerFrame);
+    playerVelocityY = Math.max(playerVelocityY, -maxSpeedPerFrame);
+    playerVelocityX = Math.min(playerVelocityX, maxSpeedPerFrame);
+    playerVelocityX = Math.max(playerVelocityX, -maxSpeedPerFrame);
 
     // player stays in middle of screen, so move origin instead of player
     originX -= playerVelocityX;
