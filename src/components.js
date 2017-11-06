@@ -387,6 +387,7 @@ Crafty.c('PlayerCharacter', {
 		}
 
 		// don't forget to be awesome at math
+		// My distance from center
 		var distanceBetweenCenters = Math.sqrt( Math.pow( this.center("x") - boundary.center("x"), 2 ) + Math.pow( this.center("y") - boundary.center("y"), 2) );
 		var radiiAdded = this.hitCircle.radius + boundary.hitCircle.radius;
 		var radiiSubtracted = Math.abs(boundary.hitCircle.radius - this.hitCircle.radius);
@@ -402,15 +403,20 @@ Crafty.c('PlayerCharacter', {
 	},
 
 	// this function is probably my proudest moment as a coder / mathematician / poet / argonaut / donkey show.
+
+	// A - This is beef, need calculate
 	slideOnEdge: function(boundary) {
 
 		// get basic information about the line connecting the center of the player and the center of the petri dish
+		// A - Get (x,y) of point and the slope from the origin
 		var centerJoinComponentX = this.center('x') - boundary.center('x');
 		var centerJoinComponentY = this.center('y') - boundary.center('y');
 		var slopeOfCenterJoin = Util.getSlope(centerJoinComponentY, centerJoinComponentX);
 
 		// get information about tangent vector at point of collision and find unit components (vector of length 1 in direction of tangent)
+		// A - Slope of 90 degree line
 		var slopeOfTangent = Util.getSlope(-centerJoinComponentX, centerJoinComponentY);
+		// A - magnitude (length) to create the unit vector
 		var tangentMagnitude = Math.sqrt(Math.pow(centerJoinComponentY, 2) + Math.pow(centerJoinComponentX, 2));
 		var unitComponentX = centerJoinComponentY / tangentMagnitude;
 		var unitComponentY = - centerJoinComponentX / tangentMagnitude;
@@ -435,13 +441,18 @@ Crafty.c('PlayerCharacter', {
 		if (motionComponentX == 0 && motionComponentY == 0) {
 			this._movement.x = 0;
 			this._movement.y = 0;
+			// A - does this even do anything exciting?
 			this.stayAtEdgeWhileColliding(); // make sure we're exactly at edge
 			return;
 		}
 
+		// We have found the point that is still within the boundary RN. Next step is to only use part of the next input
+		// I'm pretty sure that we aren't finding the intersect of the two lines, we are actually just finding the point
+		// from where we would have landed, minus some of the magnitude to get us within the circle…
 		var slopeOfMotion = Util.getSlope(motionComponentY, motionComponentX);
 
 		// use dot product to see if angle between tangent vector and motion vector is concave (reverse tangent vector if not)
+		// A - sure, why not. not sure I understan the convex/concave comment, but I get the dotproduct idea here - Are we in the same direction
 		var tangentComponents = [unitComponentX, unitComponentY];
 		var motionComponents = [motionComponentX, motionComponentY];
 		var dotProduct = Util.dotProduct(tangentComponents, motionComponents);
@@ -483,6 +494,14 @@ Crafty.c('PlayerCharacter', {
 
 	},
 
+	// A - This calculate the current position
+	// A - correctMagnitude = radius of boundary
+	// A - currentMagnitude = distance from the origin plus the radius of the character (basically the distance to your outer edge)
+	// A - MagnitudeCorrection = craziness. 1 -  (the ratio of the boundary : our characters outer edge)
+	// A - ^^ I think this will be very tiny
+	// A - the corrections are our X|Y times the correction (tiny number, probably negative) times -1 WTF
+	// Add these numbers to our current x and y.
+	// This is a tiny correction to the x and y...but I don't know for what
 	stayAtEdgeWhileColliding: function() {
 		var boundary = Crafty("Boundary");
 		var centerJoinComponentX = this.center('x') - boundary.center('x');
