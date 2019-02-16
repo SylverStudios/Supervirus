@@ -12,6 +12,9 @@ Crafty.scene('Game', function() {
 	Crafty.e('MobArray');
 	for (var i = 0 ; i < 30 ; i++) {
 		Crafty('MobArray').add(Crafty.e('PassiveMob'));
+		// Crafty('MobArray').get(i)._w = 10 + 2*i;
+		// Crafty('MobArray').get(i)._h = 10 + 2*i;
+		// Crafty('MobArray').get(i).redrawHitCircle();
 	}
 	Crafty.e('HeadsUpDisplay');
 	Crafty('PlayerCharacter').attach(Crafty('HeadsUpDisplay'));
@@ -56,7 +59,7 @@ Crafty.scene('Defeat', function() {
 	// After a short delay, watch for the player to press a key, then restart
   // the game when a key is pressed
   this.restart_game = Crafty.bind('KeyDown', function(e) {
-  	if( e.key == 32 ) location.reload();
+  	if( e.keyCode == 32 ) location.reload();
   });
 }, function() {
   // Remove our event binding from above so that we don't

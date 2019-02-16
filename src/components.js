@@ -110,22 +110,34 @@ Crafty.c('PlayerMovement', {
 
 });
 
+var keyTranslations = {
+  'ArrowLeft': 'LEFT_ARROW',
+  'LEFT_ARROW': 'ArrowLeft',
+  'ArrowRight': 'RIGHT_ARROW',
+  'RIGHT_ARROW': 'ArrowRight',
+  'ArrowUp': 'UP_ARROW',
+  'UP_ARROW': 'ArrowUp',
+  'ArrowDown': 'DOWN_ARROW',
+  'DOWN_ARROW': 'ArrowDown',
+};
 
 Crafty.c("PlayerMovement", {
 
   _keydown: function (e) {
-		if (this._keyDirection[e.key]) {
-			this._accel.x = this._keyDirection[e.key].x ? this._keyDirection[e.key].x : this._accel.x;
-			this._accel.y = this._keyDirection[e.key].y ? this._keyDirection[e.key].y : this._accel.y;
+    var key = keyTranslations[e.key];
+		if (this._keyDirection[key]) {
+			this._accel.x = this._keyDirection[key].x ? this._keyDirection[key].x : this._accel.x;
+			this._accel.y = this._keyDirection[key].y ? this._keyDirection[key].y : this._accel.y;
 			//this.trigger('NewDirection', this._accel);
 		}
 	},
 
   _keyup: function (e) {
-		if (this._keyDirection[e.key]) {
-
-			this._accel.x = this.isDown(this._oppKey[e.key]) && this._keyDirection[e.key].x ? this._keyDirection[this._oppKey[e.key]].x : (this._keyDirection[e.key].x ? 0 : this._accel.x);
-			this._accel.y = this.isDown(this._oppKey[e.key]) && this._keyDirection[e.key].y ? this._keyDirection[this._oppKey[e.key]].y : (this._keyDirection[e.key].y ? 0 : this._accel.y);
+    var key = keyTranslations[e.key];
+		if (this._keyDirection[key]) {
+      var oppKeyIsDown = !!Crafty.keydown[this._oppKey[key]] || Crafty.keydown[keyTranslations[this._oppKey[key]]];
+			this._accel.x = oppKeyIsDown && this._keyDirection[key].x ? this._keyDirection[this._oppKey[key]].x : (this._keyDirection[key].x ? 0 : this._accel.x);
+			this._accel.y = oppKeyIsDown && this._keyDirection[key].y ? this._keyDirection[this._oppKey[key]].y : (this._keyDirection[key].y ? 0 : this._accel.y);
 			//this.trigger('NewDirection', this._accel);
 		}
 	},
@@ -215,16 +227,16 @@ Crafty.c("PlayerMovement", {
 
 	playerMovement: function (accel, maxSpeed) {
 		this._keyDirection = {
-			37: {x: -accel}, // left
-			38: {y: -accel}, // up
-			39: {x: accel}, // right
-			40: {y: accel}, // down
+			'LEFT_ARROW': {x: -accel}, // left
+			'UP_ARROW': {y: -accel}, // up
+			'RIGHT_ARROW': {x: accel}, // right
+			'DOWN_ARROW': {y: accel}, // down
 		};
 		this._oppKey = {
-			37: 39, // left: right
-			38: 40, // up: down
-			39: 37, // right: left
-			40: 38, // down: up
+			'LEFT_ARROW': 'RIGHT_ARROW', // left: right
+			'UP_ARROW': 'DOWN_ARROW', // up: down
+			'RIGHT_ARROW': 'LEFT_ARROW', // right: left
+			'DOWN_ARROW': 'UP_ARROW', // down: up
 		}
 		this._movement = { x: 0, y: 0 };
 		this._speed = { x: 0, y: 0 };
