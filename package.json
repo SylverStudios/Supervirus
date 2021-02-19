@@ -2,10 +2,9 @@
   "name": "supervirus",
   "version": "1.0.0",
   "description": "Supervirus game.",
-  "private": true,
   "repository": {
     "type": "git",
-    "url": "git@github.com:SylverStudios/Supervirus.git"
+    "url": "git@github.com:samgqroberts/supervirus.git"
   },
   "scripts": {
     "gulp": "gulp",

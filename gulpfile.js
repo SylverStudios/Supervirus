@@ -84,9 +84,9 @@ var taskFuncs = {
   'compile-scss': function() {
     return gulp.src(scssEntryFull)
       .pipe(sass({
-         includePaths: [
-           './node_modules/bootstrap-sass/assets/stylesheets'
-         ]
+        includePaths: [
+          './node_modules/bootstrap-sass/assets/stylesheets'
+        ]
       }).on('error', sass.logError))
       .pipe(rename(scssArtifact))
       .pipe(gulp.dest(buildDir))
